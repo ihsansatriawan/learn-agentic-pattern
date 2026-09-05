@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start-01": "tsx src/01-article-refiner.ts",
+    "start-02": "tsx src/02-idea-review-board.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

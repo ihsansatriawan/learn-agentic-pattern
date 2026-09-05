@@ -9,6 +9,7 @@ core agentic building block on top of an OpenAI-compatible chat API.
 | File | Pattern | What it does |
 | --- | --- | --- |
 | `src/01-article-refiner.ts` | Multi-step pipeline (Draft → Critique → Rewrite) | Self-contained 3-step article refiner. Step 1 drafts an article from a request, step 2 critiques it as a strict senior editor, step 3 rewrites it into publication-ready output. Includes interactive CLI prompts (`@inquirer/prompts`) and Anvia Studio visualization. All schemas, model setup, pipeline, and entry point combined in one file. |
+| `src/02-idea-review-board.ts` | Fan-out / Fan-in review board (`.parallel()` -> `.step()`) | Sends one startup pitch to three reviewer branches (`CEO`, `Analyst`, `CTO`) in parallel, then merges the branch verdicts into one final board decision. Uses structured Zod schemas for each branch and a hybrid merge prompt for stronger LLM synthesis. |
 
 Shared helper lives in `src/models.ts` (OpenAI-compatible client factory with env-driven API key, base URL, and model ID).
 
@@ -16,7 +17,7 @@ Shared helper lives in `src/models.ts` (OpenAI-compatible client factory with en
 
 - Node.js with [pnpm](https://pnpm.io) (the project pins pnpm via `devEngines`)
 - An OpenAI-compatible API key — works with OpenRouter, official OpenAI, or any `/v1/chat/completions` compatible provider
-- (Optional) A [Tavily](https://app.tavily.com) API key — reserved for future grounding/search patterns, not required by `01-article-refiner.ts`
+- (Optional) A [Tavily](https://app.tavily.com) API key — reserved for future grounding/search patterns, not required by the current examples
 
 ## Setup
 
@@ -47,6 +48,25 @@ Pipeline steps inside:
 3. **Rewrite** — Editor LLM applies the rewrite plan and returns `{title, summary, content, appliedChanges[]}`.
 
 All step inputs/outputs are typed and Zod-validated end-to-end via the `Pipeline`.
+
+### 02 — Idea Review Board (Pitch → parallel reviewers → merged verdict)
+
+Two run modes, selectable via CLI argument:
+
+```bash
+# Interactive CLI mode — prompts for a startup pitch
+pnpm tsx src/02-idea-review-board.ts
+
+# Anvia Studio mode — inspect the fan-out / fan-in pipeline in the browser
+pnpm tsx src/02-idea-review-board.ts studio
+```
+
+Pipeline steps inside:
+
+1. **Parallel board review** — the same pitch is sent to three branches: `CEO`, `Analyst`, and `CTO`.
+2. **Merge verdicts** — a final merge step synthesizes the three structured reviews into one board-level decision.
+
+Branch outputs are typed with Zod, and the merge step uses a hybrid approach: structured branch results in code, formatted reviewer sections in the final LLM prompt, and structured schema-validated output again at the end.
 
 ## Stack
 
